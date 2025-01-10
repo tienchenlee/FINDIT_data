@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import requests
+import json
+import os
 from bs4 import BeautifulSoup
 from pprint import pprint
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from time import sleep
 
 def scrapeTag(soup, tag, attr=None, **kwargs):
     """
@@ -28,60 +30,102 @@ def scrapeTag(soup, tag, attr=None, **kwargs):
         return f"No matching tags found for tag: {tag}"    
     
 
-def main(url):
+def get_compInfo(url):
     resultLIST = []
     # 使用瀏覽器驅動
     driver = webdriver.Chrome()
     driver.get(url)
     
     # 等待頁面加載完成
-    driver.implicitly_wait(10)
-    
+    driver.implicitly_wait(50)
     # 獲取動態加載的 HTML
-    html = driver.page_source
+    htmlSTR = driver.page_source
     driver.quit()
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(htmlSTR, "lxml")
     
     # 使用統一的 scrape_tag 函數來抓取不同的標籤
-    comp_nameSTR = scrapeTag(soup, "h2", id="info-name", class_="fz-B")                                     #公司名稱
-    dateSTR = scrapeTag(soup, "div", class_="found-date content-holder")                                    #成立時間
-    comp_idSTR = scrapeTag(soup, "div", class_="company-id content-holder")                                 #統一編號
-    statusSTR = scrapeTag(soup, "div", class_="company-companyStatus content-holder")                       #公司狀態
-    mem_numSTR = scrapeTag(soup, "div", class_="member-num content-holder")                                 #團隊人數
-    moneySTR = scrapeTag(soup, "span", id="ContentPlaceHolder_CompanyInfoPlaceHolder_money")                #實收資本額   
-    founderSTR = scrapeTag(soup, "div", class_="founder content-holder")                                    #負責人
-    categorySTR = scrapeTag(soup, "div", class_="category content-holder")                                  #主分類
-    linkSTR = scrapeTag(soup, "a", attr="href", class_="a-link")                                            #官方網站
+    comp_nameLIST = scrapeTag(soup, "h2", id="info-name", class_="fz-B")                                     #公司名稱
+    dateLIST = scrapeTag(soup, "div", class_="found-date content-holder")                                    #成立時間
+    comp_idLIST = scrapeTag(soup, "div", class_="company-id content-holder")                                 #統一編號
+    statusLIST = scrapeTag(soup, "div", class_="company-companyStatus content-holder")                       #公司狀態
+    mem_numLIST = scrapeTag(soup, "div", class_="member-num content-holder")                                 #團隊人數
+    moneyLIST = scrapeTag(soup, "span", id="ContentPlaceHolder_CompanyInfoPlaceHolder_money")                #實收資本額   
+    founderLIST = scrapeTag(soup, "div", class_="founder content-holder")                                    #負責人
+    categoryLIST = scrapeTag(soup, "div", class_="category content-holder")                                  #主分類
+    linkLIST = scrapeTag(soup, "a", attr="href", class_="a-link")                                            #官方網站
     patentLIST = [scrapeTag(soup, "a", attr=None, **{"data-target": f"#modal-patent{i}"}) for i in range(4)]#專利狀況
-    productSTR = scrapeTag(soup, "div", class_="product content-holder")                                    #產品/服務簡介
-    comp_introSTR = scrapeTag(soup, "div", class_="company-intro content-holder")                           #公司簡介
-    locationSTR = scrapeTag(soup, "div", class_="location content-holder")                                  #公司註冊地址    
+    productLIST = scrapeTag(soup, "div", class_="product content-holder")                                 #產品/服務簡介
+    productLIST = [p.replace("\n", " ") for p in productLIST]
+    comp_introLIST = scrapeTag(soup, "div", class_="company-intro content-holder")                           #公司簡介
+    locationLIST = scrapeTag(soup, "div", class_="location content-holder")                                  #公司註冊地址    
 
     resultLIST = [
-        {
-        "公司名稱": comp_nameSTR,
+    {
+        "公司名稱": comp_nameLIST,
         "公司資訊": [
-            {"成立時間": dateSTR},
-            {"統一編號": comp_idSTR},
-            {"公司狀態": statusSTR},
-            {"團隊人數": mem_numSTR},
-            {"實收資本額(元/新台幣)": moneySTR},
-            {"負責人": founderSTR},
-            {"主分類": categorySTR},
-            {"官方網站": linkSTR},
+            {"成立時間": dateLIST},
+            {"統一編號": comp_idLIST},
+            {"公司狀態": statusLIST},
+            {"團隊人數": mem_numLIST},
+            {"實收資本額(元/新台幣)": moneyLIST},
+            {"負責人": founderLIST},
+            {"主分類": categoryLIST},
+            {"官方網站": linkLIST},
             {"專利狀況": patentLIST},
-            {"產品/服務簡介": productSTR},
-            {"公司簡介": comp_introSTR},
-            {"公司註冊地址": locationSTR}
+            {"產品/服務簡介": productLIST},
+            {"公司簡介": comp_introLIST},
+            {"公司註冊地址": locationLIST}
         ]
     }
     ]
+    
     return resultLIST
 
+def get_compLink(url):
+    compLIST = []
+    # 使用瀏覽器驅動
+    driver = webdriver.Chrome()
+    driver.get(url)
+    
+    # 等待頁面加載完成
+    #driver.implicitly_wait(120)
+    sleep(60)
+    # 獲取動態加載的 HTML
+    htmlSTR = driver.page_source
+    driver.quit()
+    soup = BeautifulSoup(htmlSTR, "lxml")
+    compTag = soup.find_all("div", class_="col-12 col-lg-3 main-title")
+    for c in compTag:
+        link = c.find("a").get("href")
+        compLIST.append(link)
+    return compLIST
 
-if __name__ == "__main__":
-    url = "https://findit.org.tw/twCompanyInfo.aspx?strId=5967"
-    #url = "https://findit.org.tw/twCompanyList.aspx"
-    result = main(url)
-    pprint(result)
+def load_jsonFILE(jsonFILE):
+    if os.path.exists(jsonFILE):
+        with open (jsonFILE, "r", encoding="utf-8") as f:
+            try:
+                all_resultLIST = json.load(f)
+            except json.JSONDecodeError:
+                all_resultLIST = []
+    else:
+        all_resultLIST = []
+    
+    all_resultLIST.extend(resultLIST)
+    with open (jsonFILE, "w", encoding="utf-8") as f:
+        json.dump(all_resultLIST, f, ensure_ascii=False, indent=4)
+    
+    return all_resultLIST
+
+if __name__ == "__main__":   
+    url = "https://findit.org.tw/twCompanyList.aspx"
+    compLIST = get_compLink(url)
+    pprint(compLIST)
+    jsonFILE = "../../corpus/FINDIT_LIST.json"
+    all_resultLIST = []
+    for c in compLIST:
+        url = "https://findit.org.tw/" + c
+        resultLIST = get_compInfo(url)
+        #pprint(resultLIST)
+        all_resultLIST = load_jsonFILE(jsonFILE)
+        pprint(all_resultLIST)
     
