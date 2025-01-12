@@ -61,13 +61,13 @@ def main(itemNameSTR, itemDICT):
             for a_s in aliasLIST:
                 resultDICT["team_num"].append(f"{a_s}的{i_s}是{itemDICT[i_s]}")
         elif i_s.startswith("實收資本額"):
-            resultDICT["team_num"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是{itemDICT[i_s]}")
-            resultDICT["team_num"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是{itemDICT[i_s]}元")
-            resultDICT["team_num"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是新台幣{itemDICT[i_s]}元")
+            resultDICT["capital"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是{itemDICT[i_s]}")
+            resultDICT["capital"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是{itemDICT[i_s]}元")
+            resultDICT["capital"].append(f"{itemNameSTR}的{purgePAT.sub('', i_s)}是新台幣{itemDICT[i_s]}元")
             for a_s in aliasLIST:
-                resultDICT["team_num"].append(f"{a_s}的{i_s}是{itemDICT[i_s]}")
-                resultDICT["team_num"].append(f"{a_s}的{i_s}是{itemDICT[i_s]}元")
-                resultDICT["team_num"].append(f"{a_s}的{i_s}是新台幣{itemDICT[i_s]}元")
+                resultDICT["capital"].append(f"{a_s}的{i_s}是{itemDICT[i_s]}")
+                resultDICT["capital"].append(f"{a_s}的{i_s}是{itemDICT[i_s]}元")
+                resultDICT["capital"].append(f"{a_s}的{i_s}是新台幣{itemDICT[i_s]}元")
         elif i_s.startswith("負責人"):
             resultDICT["owner"].append(f"{itemNameSTR}的{i_s}是{itemDICT[i_s]}")
             for a_s in aliasLIST:
