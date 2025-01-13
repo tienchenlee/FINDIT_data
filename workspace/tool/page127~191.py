@@ -135,7 +135,7 @@ if __name__ == "__main__":
         
     all_resultLIST = []
     
-    company_i = 1
+    company_i = 6301
     for i in range(127, 192): #在這裡循環每一頁
         url = f"https://findit.org.tw/twCompanyList.aspx?strSortColumn=strFundDate&strSortDirection=descending&intPageIndex={i}&intCountPerPage=50"
         compLIST = get_compLink(url)    #每次迴圈都抓取該頁的公司連結

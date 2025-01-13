@@ -132,22 +132,17 @@ if __name__ == "__main__":
     
     if os.path.exists(jsonFILE):
         os.remove(jsonFILE)
-        
-    all_resultLIST = []
-    
-    #company_i = 1
-    company_i = 467
-    start_page = 9  # 從第start_page +1頁開始
-    #for i in range(0, 192): #在這裡循環每一頁
-    
+   
+    all_resultLIST = []    
+    company_i = 467 # 從第467公司開始
+    start_page = 9  # 從第start_page +1頁開始    
     for i in range(start_page, 192): #在這裡循環每一頁
         url = f"https://findit.org.tw/twCompanyList.aspx?strSortColumn=strFundDate&strSortDirection=descending&intPageIndex={i}&intCountPerPage=50"
         compLIST = get_compLink(url)    #每次迴圈都抓取該頁的公司連結
         pprint(compLIST)
         
         page_resultLIST = []
-        #for c in compLIST:  #使用抓取到的公司連結進一步抓取公司資訊
-        for c_index, c in enumerate(compLIST):
+        for c_index, c in enumerate(compLIST):  #使用抓取到的公司連結進一步抓取公司資訊
             if i == start_page and c_index < (company_i - 1) % 50:
                 continue
             
