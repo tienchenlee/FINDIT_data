@@ -118,11 +118,20 @@ def load_jsonFILE(jsonFILE, company_resultLIST):
     return all_resultLIST
 
 def get_companyjsonFILE(i, company_i, company_resultLIST):
+    # 確保資料夾存在，如果不存在則創建
+    company_folder = "../../corpus/company"
+    if not os.path.exists(company_folder):
+        os.makedirs(company_folder)
+        
     company_jsonFILE = f"../../corpus/company/company_{company_i}.json"
     with open(company_jsonFILE, "w", encoding="utf-8") as f:
         json.dump(company_resultLIST, f, ensure_ascii=False, indent=4)
 
 def get_pagejsonFILE(i, page_resultLIST):
+    page_folder = "../../corpus/page"
+    if not os.path.exists(page_folder):
+        os.makedirs(page_folder)     
+    
     page_jsonFILE = f"../../corpus/page/page_{i + 1}.json"
     with open(page_jsonFILE, "w", encoding="utf-8") as f:
         json.dump(page_resultLIST, f, ensure_ascii=False, indent=4)
