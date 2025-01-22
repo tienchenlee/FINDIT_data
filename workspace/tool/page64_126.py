@@ -37,11 +37,15 @@ def scrapeTag(soup, tag, attr=None, **kwargs):
 def get_compInfo(url):
     resultLIST = []
     # 使用瀏覽器驅動
-    driver = webdriver.Chrome()
+    #driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
+    
     driver.get(url)
     
     # 等待頁面加載完成
-    driver.implicitly_wait(15)
+    #driver.implicitly_wait(15)
+    sleep(30)
+    
     # 獲取動態加載的 HTML
     htmlSTR = driver.page_source
     driver.quit()
@@ -87,7 +91,9 @@ def get_compInfo(url):
 def get_compLink(url):
     compLIST = []
     # 使用瀏覽器驅動
-    driver = webdriver.Chrome()
+    #driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
+    
     driver.get(url)
     
     sleep(60)
@@ -137,29 +143,61 @@ def get_pagejsonFILE(i, page_resultLIST):
         json.dump(page_resultLIST, f, ensure_ascii=False, indent=4)
 
 if __name__ == "__main__":
+    #jsonFILE = "../../corpus/FINDIT_LIST.json"
+    
+    #if os.path.exists(jsonFILE):
+        #os.remove(jsonFILE)
+        
+    #all_resultLIST = []
+    
+    #company_i = 3151
+    #for i in range(64, 127): #在這裡循環每一頁
+        #url = f"https://findit.org.tw/twCompanyList.aspx?strSortColumn=strFundDate&strSortDirection=descending&intPageIndex={i}&intCountPerPage=50"
+        #compLIST = get_compLink(url)    #每次迴圈都抓取該頁的公司連結
+        #pprint(compLIST)
+
+        #page_resultLIST = []
+        #for c in compLIST:  #使用抓取到的公司連結進一步抓取公司資訊
+            #url = "https://findit.org.tw/" + c
+            #company_resultLIST = get_compInfo(url)
+            #companyjsonFILE = get_companyjsonFILE(i, company_i, company_resultLIST)
+            #company_i += 1
+            #page_resultLIST.extend(company_resultLIST)
+            #pprint(company_resultLIST)
+            #all_resultLIST = load_jsonFILE(jsonFILE, company_resultLIST)    # 將該公司的資料合併到總資料中
+            
+        #pagejsonFILE = get_pagejsonFILE (i, page_resultLIST)    # 儲存該頁的 JSON 檔案
+        #pprint(all_resultLIST)
+    
     jsonFILE = "../../corpus/FINDIT_LIST.json"
     
     if os.path.exists(jsonFILE):
         os.remove(jsonFILE)
-        
+   
     all_resultLIST = []
-    
-    company_i = 3151
-    for i in range(64, 127): #在這裡循環每一頁
-        url = f"https://findit.org.tw/twCompanyList.aspx?strSortColumn=strFundDate&strSortDirection=descending&intPageIndex={i}&intCountPerPage=50"
-        compLIST = get_compLink(url)    #每次迴圈都抓取該頁的公司連結
-        pprint(compLIST)
-
-        page_resultLIST = []
-        for c in compLIST:  #使用抓取到的公司連結進一步抓取公司資訊
-            url = "https://findit.org.tw/" + c
-            company_resultLIST = get_compInfo(url)
-            companyjsonFILE = get_companyjsonFILE(i, company_i, company_resultLIST)
+    page_resultLIST = []
+    company_i = 3402  # 從第 3402 公司開始
+    while company_i <= 6350:  # 到 6300
+        company_FILEname = f"../../corpus/company/company_{company_i}.json"
+        if os.path.exists(company_FILEname):    #檔案已存在就跳下一個 company_i
+            print(f"{company_FILEname} already exists, skipping...")
             company_i += 1
-            page_resultLIST.extend(company_resultLIST)
-            pprint(company_resultLIST)
-            all_resultLIST = load_jsonFILE(jsonFILE, company_resultLIST)    # 將該公司的資料合併到總資料中
+            continue
+
+        start_page_idx = (company_i - 1) // 50  #page 的 idx 是從 0 開始，也就是 page 1 的 idx 是 0
+        page_url = f"https://findit.org.tw/twCompanyList.aspx?strSortColumn=strFundDate&strSortDirection=descending&intPageIndex={start_page_idx}&intCountPerPage=50"
+        compLIST = get_compLink(page_url)  # 每次迴圈抓取該頁的公司連結
+        pprint(compLIST)
+        
+        for c_index, c_link in enumerate(compLIST):
+            if c_index + 1 != (company_i - 1) % 50 + 1:
+                continue
+                
+            comp_url = "https://findit.org.tw/" + c_link
+            company_resultLIST = get_compInfo(comp_url)
+            companyjsonFILE = get_companyjsonFILE(start_page_idx, company_i, company_resultLIST)
+            company_i += 1
             
-        pagejsonFILE = get_pagejsonFILE (i, page_resultLIST)    # 儲存該頁的 JSON 檔案
-        pprint(all_resultLIST)
-    
+            
+                
+            break
